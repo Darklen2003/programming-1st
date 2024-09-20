@@ -25,27 +25,29 @@ function draw()
     rect(0,480,1024,100);
     fill(128,128,128);
     if (key == 'd')
-    {
-        StayRight();
-    }
-    else if(key == 'a')
-    {
-        StayLeft();
-    }
-    else if(key == 'q')
-    {
+        {
+            StayRight();
+        }
+        else if(key == 'a')
+        {
+            StayLeft();
+        }
+        else if(key == 'a' && key == ' ')
+        {
             JumpLeft();
-    }
-    else if(key == ' ')
-    {
-        Jump();
-    }
-    else if(key == 'e')
-    {
+        }
+        else if(key == ' ')
+        {
+            Jump();
+        }
+        else if(key == 'd' && key == ' ')
+        {
             JumpRight();
-    } 
-    
-        idle();
+        } 
+        else
+        {
+            idle();
+        }
     
 
 }
