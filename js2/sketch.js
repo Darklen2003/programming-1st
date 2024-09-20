@@ -32,7 +32,7 @@ function draw()
         {
             StayLeft();
         }
-        else if(key == 'a' && key == ' ')
+        else if(key == 'q')
         {
             JumpLeft();
         }
@@ -40,7 +40,7 @@ function draw()
         {
             Jump();
         }
-        else if(key == 'd' && key == ' ')
+        else if(key == 'e')
         {
             JumpRight();
         } 
