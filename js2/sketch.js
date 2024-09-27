@@ -24,6 +24,18 @@ function draw()
     fill(100, 150, 10);
     rect(0,480,1024,100);
     fill(128,128,128);
+    if (keyIsPressed == false)
+    {
+        idle();
+    }
+    else
+    {
+        isPressed();
+    }
+
+}
+function isPressed()
+{
     if (key == 'd')
         {
             StayRight();
@@ -48,8 +60,6 @@ function draw()
         {
             idle();
         }
-    
-
 }
 function idle()
 {
