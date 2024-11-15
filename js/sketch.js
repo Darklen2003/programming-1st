@@ -12,24 +12,23 @@ let head =
     CY: 410,
     radius: 45
 }
-let enemy = 
-[
-     EnPosX = 410,
-     EnPosY = 432,
-     EnState = "enemyRight",
-     EnDotLeft = 0,
-     EnDotRight = 300,
-     EnDirection = 1,
-     EnRand = 0
-]
 
+//enemy
+var EnPosX = 410;
+var EnPosY = 432;
+var EnSizeX = 15;
+var EnSizeY = 15;
+var EnState = enemyRight;
+var EnDotLeft = 400;
+var EnDotRight = 700;
+let EnDirection = 1;
+var EnRand;
 
 function setup() {
     createCanvas(1024, 576);
 }
 
 function draw() {
-    
     noStroke();
     background(100, 155, 255);
     fill(100, 150, 10);
@@ -41,37 +40,46 @@ function draw() {
     else {
         isPressed();
     }
-    enemy[6] = Math.floor(Math.random() * (10 - 1)) + 1;
-    switch (enemy[2]) {
+    EnRand = Math.floor(Math.random() * (max - min)) + min; //дает рандомное число в диапазоне от  min до max, подставь вместо них любые значения
+    switch (EnState) {
         case "enemyLeft":
-            EnemyLeft();
+            enemyLeft();
             break;
         case "enemyRight":
-            EnemyRight();
+            enemyRight();
             break;
         default:
-            EnemyRight();
+            enemyRight();
             break;
+}
+function enemyMovement() {
+    EnPosX += EnRand * EnDirection;
+    if (EnPosX <= EnDotLeft) {
+        EnPosX += EnDotLeft - EnPosX;
+        EnDirection *= -1;
+        EnState = "enemyRight";
+    } else if (EnPosX >= EnDotRight) {
+        EnPosX -= EnPosX - EnDotRight;
+        EnDirection *= -1;
+        EnState = "enemyLeft";
     }
-    Movement();
 }
-
-function EnemyLeft() {
+function enemyLeft() {
     stroke("#000000");
     strokeWeight(2);
-    fill("#FFFF00");
-    circle(enemy[0], enemy[1], 50);
+    fill("#5e29b1");
+    rect(EnPosX - EnSizeX, EnPosY, EnSizeX * 2, EnSizeY * -2);
     fill("#ffffff");
-    circle(enemy[0] - 10, enemy[1], 10); 
+    circle(EnPosX - EnSizeX, EnPosY - EnSizeY, 10); //left eye
 }
 
-function EnemyRight() {
+function enemyRight() {
     stroke("#000000");
     strokeWeight(2);
-    fill("#FFFF00");
-    circle(enemy[0], enemy[1], 50);
+    fill("#5e29b1");
+    rect(EnPosX - EnSizeX, EnPosY, EnSizeX * 2, EnSizeY * -2);
     fill("#ffffff");
-    circle(enemy[0] + 10, enemy[1], 10); 
+    circle(EnPosX + EnSizeX, EnPosY - EnSizeY, 10); //right eye
 }
 function isPressed() {
     if (key == 'd') {
@@ -169,19 +177,15 @@ function JumpLeft() {
     strokeWeight(4);
     point(530, 410);
 }
-function Movement()
-    {
-        enemy[0] += enemy[6] * enemy[5]; 
-        if (enemy[0] <= enemy[3]) 
-        { 
-            enemy[0] += enemy[3] - enemy[0]; 
-            enemy[5] *= -1;
-            enemy[2] = "enemyRight";
-        } 
-        else if (enemy[0] >= enemy[4]) 
-        {
-            enemy[0] -= enemy[0] - enemy[4];
-            enemy[5] *= -1;
-            enemy[2] = "enemyLeft";
-        }
+function enemyMovement() {
+    EnPosX += EnRand * EnDirection; // EnPosX - позиция по X; EnRand - рандомное значение(скину ниже); EnDirection - меняет направление движения изначально равно 1
+    if (EnPosX <= EnDotLeft) { //EnDotLeft - левая точка области в которой можно двигаться; Если позиция по Х меньше левой точки,
+        EnPosX += EnDotLeft - EnPosX; //то EnPosX меняет направление движения и перемещается на саму позицию EnDotLeft(без этого объект  бы убегал)
+        EnDirection *= -1;// Смена направления
+        EnState = "enemyRight";//У меня объект меняет состояние, можно без этого
+    } else if (EnPosX >= EnDotRight) {// Всё тоже самое,  но с правой стороной
+        EnPosX -= EnPosX - EnDotRight;
+        EnDirection *= -1;
+        EnState = "enemyLeft";
     }
+}
