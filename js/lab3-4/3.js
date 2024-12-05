@@ -1,91 +1,138 @@
-let Characters =
-{
-    Body:
-    {
+let Characters = {
+    Body: {
         PosX: 520,
         PosY: 440,
         width: 40,
         haight: 75
-    
     },
-    
-    Eye:
-    {
+    Eye: {
         RightPosX: 550,
         LeftPosX: 530,
         PosY: 410
     },
-    
-    Head:
-    {
+    Head: {
         CentrX: 540,
         CentrY: 410,
         radius: 45
     }
-}
+};
 
+let enemy = {
+    EnPosX: 410,
+    EnPosY: 432,
+    EnState: "enemyRight",
+    EnDotLeft: 0,
+    EnDotRight: 300,
+    EnDirection: 1,
+    EnRand: 0,
+    EnSpeed: Math.floor(Math.random() * (10 - 1)) + 1,
 
+    EnemyLeft: function() {
+        stroke("#000000");
+        strokeWeight(2);
+        fill("#FFFF00");
+        circle(this.EnPosX, this.EnPosY, 50);
+        fill("#ffffff");
+        circle(this.EnPosX - 10, this.EnPosY, 10);
+    },
 
-let enemy = 
-[
-     EnPosX = 410,
-     EnPosY = 432,
-     EnState = "enemyRight",
-     EnDotLeft = 0,
-     EnDotRight = 300,
-     EnDirection = 1,
-     EnRand = 0
-]
+    EnemyRight: function() {
+        stroke("#000000");
+        strokeWeight(2);
+        fill("#FFFF00");
+        circle(this.EnPosX, this.EnPosY, 50);
+        fill("#ffffff");
+        circle(this.EnPosX + 10, this.EnPosY, 10);
+    },
+
+    Movement: function() {
+        this.EnPosX += this.EnSpeed * this.EnDirection;
+        if (this.EnPosX <= this.EnDotLeft) {
+            this.EnPosX += this.EnDotLeft - this.EnPosX;
+            this.EnDirection *= -1;
+            this.EnState = "enemyRight";
+        } else if (this.EnPosX >= this.EnDotRight) {
+            this.EnPosX -= this.EnPosX - this.EnDotRight;
+            this.EnDirection *= -1;
+            this.EnState = "enemyLeft";
+        }
+    }
+};
 
 function setup() {
     createCanvas(1024, 576);
 }
 
 function draw() {
-    
     noStroke();
     background(100, 155, 255);
+
+    // Draw ground
     fill(100, 150, 10);
     rect(0, 480, 1024, 100);
+
+    // Draw elements
+    drawMountain();
+    drawTree(130, 450);
+    drawCoin(300, 500);
+    drawCanyon();
+
+    // Character and enemy drawing
     fill(128, 128, 128);
     if (keyIsPressed == false) {
         idle();
-    }
-    else {
+    } else {
         isPressed();
     }
 
-    enemy[6] = Math.floor(Math.random() * (10 - 1)) + 1;
-    switch (enemy[2]) {
+    // Update and draw enemy
+    enemy.EnSpeed = Math.floor(Math.random() * (10 - 1)) + 1;
+    switch (enemy.EnState) {
         case "enemyLeft":
-            EnemyLeft();
+            enemy.EnemyLeft();
             break;
         case "enemyRight":
-            EnemyRight();
+            enemy.EnemyRight();
             break;
         default:
-            EnemyRight();
+            enemy.EnemyRight();
             break;
     }
-    Movement();
+    enemy.Movement();
 }
 
-function EnemyLeft() {
-    stroke("#000000");
-    strokeWeight(2);
-    fill("#FFFF00");
-    circle(enemy[0], enemy[1], 50);
-    fill("#ffffff");
-    circle(enemy[0] - 10, enemy[1], 10); 
+// Function to draw a more detailed mountain
+function drawMountain() {
+    fill(150, 150, 150); // Darker gray for the mountain
+    triangle(300, 250, 200, 480, 400, 480); // Main mountain shape
+    fill(180, 180, 180); // Another layer
+    triangle(280, 300, 200, 480, 400, 480); // Additional mountain layer
 }
 
-function EnemyRight() {
-    stroke("#000000");
-    strokeWeight(2);
-    fill("#FFFF00");
-    circle(enemy[0], enemy[1], 50);
-    fill("#ffffff");
-    circle(enemy[0] + 10, enemy[1], 10); 
+// Function to draw a more detailed tree
+function drawTree(x, y) {
+    fill(139, 69, 19); // Brown color for trunk
+    rect(x, y, 20, 40); // Trunk
+    fill(34, 139, 34); // Green color for leaves
+    ellipse(x - 20, y - 20, 60, 60); // Left foliage
+    ellipse(x + 30, y - 20, 60, 60); // Right foliage
+    ellipse(x + 5, y - 50, 80, 80); // Top foliage
+}
+
+// Function to draw a more detailed coin
+function drawCoin(x, y) {
+    fill(255, 215, 0); // Gold color
+    ellipse(x, y, 24, 22); // Coin shape
+    fill(255, 255, 0, 150); // Shiny effect
+    ellipse(x, y, 18, 16); // Inner shiny effect
+}
+
+// Function to draw a canyon
+function drawCanyon() {
+    fill(139, 69, 19); // Brown color for canyon
+    rect(700, 480, 100, 96); // Canyon shape
+    fill(0); // Black for the inside of the canyon
+    rect(720, 480, 60, 96); // Inner part of canyon
 }
 
 function isPressed() {
@@ -184,20 +231,3 @@ function JumpLeft() {
     strokeWeight(4);
     point(Characters.Eye.LeftPosX, Characters.Eye.PosY);
 }
-
-function Movement()
-    {
-        enemy[0] += enemy[6] * enemy[5]; 
-        if (enemy[0] <= enemy[3]) 
-        { 
-            enemy[0] += enemy[3] - enemy[0]; 
-            enemy[5] *= -1;
-            enemy[2] = "enemyRight";
-        } 
-        else if (enemy[0] >= enemy[4]) 
-        {
-            enemy[0] -= enemy[0] - enemy[4];
-            enemy[5] *= -1;
-            enemy[2] = "enemyLeft";
-        }
-    }
