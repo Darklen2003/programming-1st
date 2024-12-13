@@ -123,8 +123,6 @@ function draw() {
         Characters.facingDirection = -1; 
     }
 
-    updateEyes();
-
     fill(128, 128, 128);
     idle();
 
@@ -152,6 +150,8 @@ function moveCharacter(speed) {
     Characters.Arms.Right.PosX += speed; 
     Characters.Legs.Left.PosX += speed; 
     Characters.Legs.Right.PosX += speed;
+    Characters.Eye[0].PosX = Characters.Head.CentrX - 10; 
+    Characters.Eye[1].PosX = Characters.Head.CentrX + 10;
 }
 
 function updateCharacter() {
@@ -162,7 +162,7 @@ function updateCharacter() {
         Characters.Legs.Left.PosY += Characters.velocityY; 
         Characters.Legs.Right.PosY += Characters.velocityY; 
         Characters.Arms.Left.PosY += Characters.velocityY; 
-        Characters.Arms.Right.PosY += Characters.velocityY; 
+        Characters.Arms.Right.PosY += Characters.velocityY;  
 
         if (Characters.Body.PosY >= 440) { 
             Characters.Body.PosY = 440; 
@@ -175,14 +175,10 @@ function updateCharacter() {
             Characters.velocityY = 0; 
         }
     }
+    Characters.Eye[0].PosY = Characters.Head.CentrY; 
+    Characters.Eye[1].PosY = Characters.Head.CentrY;
 }
 
-function updateEyes() {
-    Characters.Eye[0].PosX = Characters.Head.CentrX - 10; 
-    Characters.Eye[1].PosX = Characters.Head.CentrX + 10; 
-    Characters.Eye[0].PosY = Characters.Head.CentrY; 
-    Characters.Eye[1].PosY = Characters.Head.CentrY; 
-}
 
 function keyPressed() {
     if (key === ' ') {
@@ -203,11 +199,9 @@ function idle() {
         circle(eye.PosX, eye.PosY, eye.radius); 
     });
     
-    
     fill(128); 
     rect(Characters.Arms.Left.PosX, Characters.Arms.Left.PosY, Characters.Arms.Left.width, Characters.Arms.Left.height);
     rect(Characters.Arms.Right.PosX, Characters.Arms.Right.PosY, Characters.Arms.Right.width, Characters.Arms.Right.height);
-    
     
     fill(128); 
     rect(Characters.Legs.Left.PosX, Characters.Legs.Left.PosY, Characters.Legs.Left.width, Characters.Legs.Left.height);
