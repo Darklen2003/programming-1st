@@ -50,24 +50,7 @@ let coinFromEnemy = {
     y: 0,
     radius: 12,
     collected: false,
-
-    draw: function() {
-        if (!this.collected) {
-            fill(255, 215, 0);
-            ellipse(this.x, this.y, this.radius * 2, this.radius * 2);
-        }
-    },
-
-    checkCollection: function() {
-        if (!this.collected) {
-            let distance = dist(Characters.Body.PosX + Characters.Body.width / 2, Characters.Body.PosY + Characters.Body.height / 2, this.x, this.y);
-            if (distance < 40) {
-                this.collected = true;
-                score += 1;
-            }
-        }
-    }
-};
+}
 
 let canyons = [
     { x: 720, y: 480, width: 60, height: 96 },
@@ -81,10 +64,10 @@ let gameOver = false;
 function spawnEnemy() {
     let side = random([0, 1]);
     let enemy = {
-        EnPosX: side === 0 ? -50 : width + 50,
+        EnPosX: side == 0 ? -50 : width + 50,
         EnPosY: 432,
-        EnState: side === 0 ? "enemyRight" : "enemyLeft",
-        EnDirection: side === 0 ? 1 : -1,
+        EnState: side == 0 ? "enemyRight" : "enemyLeft",
+        EnDirection: side == 0 ? 1 : -1,
         EnSpeed: Math.floor(Math.random() * (10 - 1)) + 1,
         isAlive: true
     };
@@ -115,7 +98,6 @@ function draw() {
     drawTree(450, 450); 
     drawCanyons();
 
-    // Отрисовываем все монетки
     for (let coin of coinsFromEnemies) {
         if (!coin.collected) {
             fill(255, 215, 0);
@@ -125,7 +107,6 @@ function draw() {
 
     updateCharacter();
 
-    // Спавн новых врагов
     if (frameCount % 120 == 0) {
         spawnEnemy();
     }
@@ -150,7 +131,6 @@ function draw() {
         checkCanyonCollision(canyon);
     }
 
-    // Проверяем сбор всех монеток
     for (let coin of coinsFromEnemies) {
         if (!coin.collected) {
             let distance = dist(Characters.Body.PosX + Characters.Body.width / 2, Characters.Body.PosY + Characters.Body.height / 2, coin.x, coin.y);
@@ -278,7 +258,7 @@ function updateAndDrawEnemies() {
                 continue;
             }
 
-            if (enemy.EnState === "enemyLeft") {
+            if (enemy.EnState == "enemyLeft") {
                 stroke("#000000");
                 strokeWeight(2);
                 fill("#FFFF00");
@@ -410,7 +390,6 @@ function checkSwordHit() {
                 if (swordRight > enemyLeft && swordLeft < enemyRight &&
                     swordBottom > enemyTop && swordTop < enemyBottom) {
                     enemy.isAlive = false;
-                    // Добавляем новую монетку в массив
                     coinsFromEnemies.push({
                         x: enemy.EnPosX,
                         y: enemy.EnPosY,
