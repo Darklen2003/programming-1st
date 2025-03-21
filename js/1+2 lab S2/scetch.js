@@ -83,6 +83,49 @@ function preload() {
 
 function setup() {
     createCanvas(1024, 576);
+    // Создаем элементы управления звуком
+    let soundControls = createDiv('');
+    soundControls.id('soundControls');
+    soundControls.position(700, 10);
+    
+    let volumeLabel = createElement('label', 'Громкость:');
+    volumeLabel.parent(soundControls);
+    
+    let volumeSlider = createSlider(0, 1, 1, 0.1);
+    volumeSlider.id('volumeSlider');
+    volumeSlider.parent(soundControls);
+    
+    let muteButton = createButton('Выключить звук');
+    muteButton.id('muteButton');
+    muteButton.parent(soundControls);
+    
+    // Обработчик изменения громкости
+    volumeSlider.input(() => {
+        let volume = volumeSlider.value();
+        bgMusic.volume = volume;
+        damageSound.volume = volume;
+        coinCollectSound.volume = volume;
+        canyonFallSound.volume = volume;
+    });
+    
+    // Обработчик кнопки отключения звука
+    muteButton.mousePressed(() => {
+        if (bgMusic.volume > 0) {
+            bgMusic.volume = 0;
+            damageSound.volume = 0;
+            coinCollectSound.volume = 0;
+            canyonFallSound.volume = 0;
+            volumeSlider.value(0);
+            muteButton.html('Включить звук');
+        } else {
+            bgMusic.volume = 1;
+            damageSound.volume = 1;
+            coinCollectSound.volume = 1;
+            canyonFallSound.volume = 1;
+            volumeSlider.value(1);
+            muteButton.html('Выключить звук');
+        }
+    });
     
 }
 
@@ -143,17 +186,20 @@ function draw() {
     }
 
     fill(255);
+    textAlign(LEFT);
     textSize(24);
     text("Score: " + score, 10, 30);
 
     fill(255, 0, 0);
     textSize(24);
-    textAlign(RIGHT);
-    text("Health: " + Characters.health, width - 10, 30);
+    text("Health: " + Characters.health, width - 1020, 70);
 
     if (gameOver) {
         displayGameOver();
     }
+
+    Characters.Eye[0].PosY = Characters.Head.CentrY; 
+    Characters.Eye[1].PosY = Characters.Head.CentrY;
 }
 
 function checkCanyonCollision(canyon) {
@@ -226,6 +272,8 @@ function restartGame() {
     Characters.Arms.Left.PosY = 440; 
     Characters.Arms.Right.PosX = 570; 
     Characters.Arms.Right.PosY = 440; 
+    Characters.Eye[0].PosX = Characters.Head.CentrX - 10; 
+    Characters.Eye[1].PosX = Characters.Head.CentrX + 10;
     score = 0; 
     gameOver = false; 
     Characters.canMove = true;
@@ -306,9 +354,6 @@ function updateCharacter() {
             Characters.Sword.strikeOffset = 0; 
         }
     }
-
-    Characters.Eye[0].PosY = Characters.Head.CentrY; 
-    Characters.Eye[1].PosY = Characters.Head.CentrY;
 
     if (Characters.health <= 0) {
         gameOver = true;
