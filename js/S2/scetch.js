@@ -198,7 +198,7 @@ function draw() {
     fill(128, 128, 128);
     idle();
     
-    pop(); // Конец смещения камеры
+  
     
     // Отрисовка HUD поверх всего
     drawHUD();
@@ -671,37 +671,53 @@ function drawHUD() {
 }
 
 function generateChunk(chunkIndex) {
-    let baseX = chunkIndex * chunkSize;
-    
-    // Генерация каньонов с платформами
-    if (random() < 0.3) {
-        const canyonCount = floor(random(1, 3));
-        for (let i = 0; i < canyonCount; i++) {
-            // Создаем каньон
-            const canyonWidth = random(60, 120);
-            const canyonX = baseX + random(50, chunkSize - 100);
-            const newCanyon = {
-                x: canyonX,
-                y: 480,
-                width: canyonWidth,
-                height: 96,
-                isLava: random() < 0.2
-            };
-            canyons.push(newCanyon);
-            
-            // Создаем платформу над каньоном
-            const platformWidth = canyonWidth * 0.8; // Ширина 80% от каньона
+    const chunkStartX = chunkIndex * chunkSize;
+    const chunkEndX = chunkStartX + chunkSize;
+
+    // Генерация каньонов для каждого чанка
+    const canyonCount = 1; // 1-3 каньона на чанк
+    for(let i = 0; i < canyonCount; i++) {
+        const canyonWidth = random(60, 120);
+        const canyonX = chunkStartX + random(50, chunkSize - canyonWidth - 50);
+        
+        canyons.push({
+            x: canyonX,
+            y: 480,
+            width: canyonWidth,
+            height: 96,
+            isLava: random() < 0.2
+        });
+    }
+
+    // Генерация платформ для каждого чанка
+    const platformCount = floor(random(1, 2)); // 2-4 платформы на чанк
+    for(let i = 0; i < platformCount; i++) {
+        const platformType = random() < 0.3 ? 'moving' : 'static';
+        const platformWidth = random(60, 150);
+        const platformX = chunkStartX + random(0, chunkSize - platformWidth);
+        const platformY = random(150, 400);
+        
+        platforms.push({
+            x: platformX,
+            y: platformY,
+            width: platformWidth,
+            height: 15,
+            velocityX: platformType === 'moving' ? random(-1.5, 1.5) : 0
+        });
+    }
+
+    // Дополнительные платформы над каньонами (опционально)
+    canyons.slice(-canyonCount).forEach(canyon => {
+        if(random() < 0.5) { // 50% шанс спавна платформы над каньоном
             platforms.push({
-                x: canyonX + (canyonWidth - platformWidth)/2, // Центрируем над каньоном
-                y: 380, // Высота над каньоном
-                width: platformWidth,
+                x: canyon.x + 10,
+                y: canyon.y - 100,
+                width: canyon.width - 20,
                 height: 15,
-                velocityX: random(-1, 1) // Случайное движение влево/вправо
+                velocityX: 0
             });
         }
-    }
-    
-    // Удаляем старую генерацию платформ
+    });
 }
 
 // Новая функция для обновления камеры
