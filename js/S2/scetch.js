@@ -322,11 +322,10 @@ function drawTree(x, y, size = 1) {
     translate(-parallaxOffset, 0);
     scale(size);
     
-    // Trunk
     fill(139, 69, 19);
     rect(x/size, y/size, 20/size, 40/size);
     
-    // Leaves
+
     fill(34, 139, 34);
     ellipse(x/size - 20/size, y/size - 20/size, 60/size, 60/size);
     ellipse(x/size + 30/size, y/size - 20/size, 60/size, 60/size);
@@ -335,30 +334,14 @@ function drawTree(x, y, size = 1) {
     pop();
 }
 
-function drawClouds() {
-    for (let cloud of clouds) {
-        cloud.x += cloud.speed;
-        if (cloud.x > levelWidth + 200) cloud.x = -200;
-        
-        fill(255, 255, 255, 180);
-        noStroke();
-        ellipse(cloud.x, cloud.y, cloud.width, cloud.height);
-        ellipse(cloud.x + cloud.width/3, cloud.y - cloud.height/3, cloud.width*0.8, cloud.height*0.8);
-        ellipse(cloud.x - cloud.width/3, cloud.y, cloud.width*0.7, cloud.height*0.7);
-    }
-}
-
 function drawCastle() {
-    // Castle base
     fill(120, 120, 120);
     rect(castle.x, castle.y + 80, castle.width, castle.height - 80);
     
-    // Castle towers
     fill(100, 100, 100);
     rect(castle.x - 20, castle.y, 40, 80);
     rect(castle.x + castle.width - 20, castle.y, 40, 80);
     
-    // Castle top
     fill(80, 80, 80);
     beginShape();
     vertex(castle.x, castle.y + 80);
@@ -366,19 +349,15 @@ function drawCastle() {
     vertex(castle.x + castle.width, castle.y + 80);
     endShape(CLOSE);
     
-    // Castle windows
     fill(200, 200, 0);
     for (let i = 0; i < 3; i++) {
         rect(castle.x + 40 + i * 40, castle.y + 100, 20, 30);
     }
     
-    // Draw cannons
     fill(50, 50, 50);
     for (let cannon of castle.cannons) {
-        // Cannon base
         ellipse(cannon.x, cannon.y, 30, 20);
         
-        // Cannon barrel
         push();
         translate(cannon.x, cannon.y);
         rotate(cannon.angle);
@@ -388,15 +367,12 @@ function drawCastle() {
 }
 
 function updateCannons() {
-    // Update cannon angles to aim at player
     for (let cannon of castle.cannons) {
         let dx = (Characters.Body.PosX + Characters.Body.width/2) - cannon.x;
         let dy = (Characters.Body.PosY + Characters.Body.height/2) - cannon.y;
         cannon.angle = atan2(dy, dx);
         
-        // Shoot periodically
         if (millis() - castle.lastShotTime > castle.shotInterval) {
-            cannonSound.play();
             let speed = 5;
             cannonBalls.push({
                 x: cannon.x,
@@ -416,11 +392,9 @@ function updateCannonBalls() {
         ball.x += ball.dx;
         ball.y += ball.dy;
         
-        // Draw cannon ball
         fill(0);
         ellipse(ball.x, ball.y, ball.radius * 2);
         
-        // Check collision with player
         let distance = dist(
             Characters.Body.PosX + Characters.Body.width/2,
             Characters.Body.PosY + Characters.Body.height/2,
@@ -430,10 +404,9 @@ function updateCannonBalls() {
         
         if (distance < Characters.Body.width/2 + ball.radius) {
             Characters.health -= 20;
-            damageSound.play();
             cannonBalls.splice(i, 1);
         }
-        // Remove if out of bounds
+
         else if (ball.x < 0 || ball.x > levelWidth || ball.y < 0 || ball.y > height) {
             cannonBalls.splice(i, 1);
         }
@@ -759,14 +732,12 @@ function generateChunk(chunkIndex) {
         let attempts = 0;
         let canyonX, canyonWidth;
 
-        // Try to find valid position up to 20 attempts
         while (!validPosition && attempts < 20) {
             canyonWidth = random(60, 120);
             canyonX = chunkStartX + random(50, chunkSize - canyonWidth - 50);
             
             validPosition = true;
             
-            // Check against all existing canyons
             for (const existingCanyon of canyons) {
                 if (canyonX < existingCanyon.x + existingCanyon.width &&
                     canyonX + canyonWidth > existingCanyon.x) {
@@ -778,7 +749,6 @@ function generateChunk(chunkIndex) {
             attempts++;
         }
 
-        // Add canyon only if valid position found
         if (validPosition) {
             canyons.push({
                 x: canyonX,
