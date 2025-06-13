@@ -3,19 +3,132 @@ let floor;
 let canyonsAmount = 3;
 let seedsAmount = 10;
 let crowsAmount = 2;
+let platformsAmount = 3; // Добавлено количество платформ
 let canyons = [];
 let seeds = [];
 let crows = [];
+let platforms = []; // Массив для платформ
 let score = 0;
 let hamsterDeath = new Audio("./hamsterDeath.mp3");
 let crowDeath = new Audio("./crowDeath.mp3");
 let seedsEating = new Audio("./seeds.mp3");
-let backmus = new Audio ("./background_music.mp3");
+let backmus = new Audio("./background_music.mp3");
+let restartButton;
+let gameOver = false;
 
 function setup() {
     createCanvas(1500, innerHeight);
     
+    restartButton = createButton('🔄 Перезапустить');
+    restartButton.position(width/2 - 100, height/2 + 100);
+    restartButton.size(200, 50);
+    restartButton.style('font-size', '20px');
+    restartButton.style('background', '#ff5555');
+    restartButton.style('color', 'white');
+    restartButton.style('border', 'none');
+    restartButton.style('border-radius', '10px');
+    restartButton.style('cursor', 'pointer');
+    restartButton.style('display', 'none'); 
+    restartButton.mousePressed(restartGame);
+    
+    let soundControls = createDiv('');
+    soundControls.id('soundControls');
+    soundControls.style('position', 'absolute');
+    soundControls.style('top', '10px');
+    soundControls.style('right', '10px');
+    soundControls.style('display', 'flex');
+    soundControls.style('align-items', 'center');
+    soundControls.style('gap', '10px');
+    soundControls.style('background', 'rgba(255, 255, 255, 0.7)');
+    soundControls.style('padding', '5px 10px');
+    soundControls.style('border-radius', '20px');
+    soundControls.style('box-shadow', '0 2px 5px rgba(0,0,0,0.2)');
+    
+    let muteButton = createButton('🔊');
+    muteButton.id('muteButton');
+    muteButton.style('border', 'none');
+    muteButton.style('background', 'none');
+    muteButton.style('font-size', '20px');
+    muteButton.style('cursor', 'pointer');
+    muteButton.parent(soundControls);
+    
+    let volumeSlider = createSlider(0, 1, 1, 0.1);
+    volumeSlider.id('volumeSlider');
+    volumeSlider.style('width', '100px');
+    volumeSlider.style('height', '8px');
+    volumeSlider.style('background', '#ddd');
+    volumeSlider.style('border-radius', '4px');
+    volumeSlider.style('outline', 'none');
+    volumeSlider.style('-webkit-appearance', 'none');
+    volumeSlider.style('cursor', 'pointer');
+    volumeSlider.parent(soundControls);
+    
+    volumeSlider.elt.style.setProperty('--thumb-size', '16px');
+    let style = document.createElement('style');
+    style.innerHTML = `
+        #volumeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: var(--thumb-size);
+            height: var(--thumb-size);
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+        #volumeSlider::-moz-range-thumb {
+            width: var(--thumb-size);
+            height: var(--thumb-size);
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    volumeSlider.input(() => {
+        let volume = volumeSlider.value();
+        backmus.volume = volume;
+        hamsterDeath.volume = volume;
+        crowDeath.volume = volume;
+        seedsEating.volume = volume;
+        
+        if (volume > 0.5) {
+            muteButton.html('🔊');
+        } else if (volume > 0) {
+            muteButton.html('🔉');
+        } else {
+            muteButton.html('🔇');
+        }
+    });
+    
+    muteButton.mousePressed(() => {
+        if (backmus.volume > 0) {
+            backmus.volume = 0;
+            crowDeath.volume = 0;
+            seedsEating.volume = 0;
+            hamsterDeath.volume = 0;
+            volumeSlider.value(0);
+            muteButton.html('🔇');
+        } else {
+            backmus.volume = 1;
+            crowDeath.volume = 1;
+            seedsEating.volume = 1;
+            hamsterDeath.volume = 1;
+            volumeSlider.value(1);
+            muteButton.html('🔊');
+        }
+    });
 
+    initGame();
+}
+
+function initGame() {
+    gameOver = false;
+    score = 0;
+    canyons = [];
+    seeds = [];
+    crows = [];
+    platforms = []; // Очищаем платформы при перезапуске
+    
     floor = {
         x: 0,
         height: 200,
@@ -26,6 +139,7 @@ function setup() {
         }
     };
 
+    // Создаем каньоны
     for (let i = 0; i < canyonsAmount; i++) {
         canyons.push({
             x: 250 + i * 400,
@@ -38,6 +152,7 @@ function setup() {
         });
     }
 
+    // Создаем семена
     for (let i = 0; i < seedsAmount; i++) {
         seeds.push({
             x: 350 + i * 300,
@@ -59,6 +174,7 @@ function setup() {
         });
     }
 
+    // Создаем ворон
     for (let i = 0; i < crowsAmount; i++) {
         crows.push({
             x: 300 + i * 200,
@@ -111,6 +227,37 @@ function setup() {
         });
     }
 
+    // Создаем платформы
+    for (let i = 0; i < platformsAmount; i++) {
+        platforms.push({
+            x: 350 + i * 350, // Распределяем платформы по ширине экрана
+            y: 100 + (200), // Случайная высота
+            width: 120 + random(80), // Случайная ширина
+            height: 20,
+            color: color(150, 100, 50), // Коричневый цвет
+            draw: function() {
+                fill(this.color);
+                rect(this.x, height - this.height - this.y, this.width, this.height);
+                
+                // Текстура платформы
+                fill(120, 80, 40);
+                for (let j = 0; j < 5; j++) {
+                    rect(this.x + j * (this.width/5), 
+                         height - this.height - this.y, 
+                         this.width/5 - 2, 
+                         this.height/2);
+                }
+            },
+            // Проверка находится ли точка на платформе
+            contains: function(x, y) {
+                return x >= this.x && 
+                       x <= this.x + this.width && 
+                       y >= height - this.height - this.y && 
+                       y <= height - this.y;
+            }
+        });
+    }
+
     hamster = {
         x: 100,
         y: innerHeight - floor.height,
@@ -120,8 +267,11 @@ function setup() {
         color: "#b92d2d",
         isGrounded: false,
         isDead: false,
+        onPlatform: false, // Добавлено состояние нахождения на платформе
 
         draw: function () {
+            if (this.isDead) return;
+            
             fill(230, 200, 180);
             noStroke();
             ellipse(this.x, this.y + 20, 90, 80);
@@ -162,33 +312,120 @@ function setup() {
                 this.speedGravity++;
             }
             this.y += this.speedGravity;
+            
             if (this.isDead) {
-                if (this.y > height) {
-                    this.y = floor;
-                    this.x = 100;
-                    this.isDead = false;
+                if (this.y > height + 100) {
+                    gameOver = true;
+                    restartButton.style('display', 'block');
                 }
-            } else if (this.y + this.height > height - floor) {
-                this.y = height - floor - this.height;
-                this.isGrounded = true;
             } else {
-                this.isGrounded = false;
+                this.checkPlatforms(); // Проверяем платформы перед проверкой пола
+                
+                // Если не на платформе и не на земле - падаем
+                if (!this.onPlatform && this.y + this.height > height - floor) {
+                    this.y = height - floor - this.height;
+                    this.isGrounded = true;
+                    this.speedGravity = 0;
+                }
             }
         },
+
+    checkPlatforms: function() {
+        this.onPlatform = false;
+        let wasOnPlatform = false;
+        
+        for (let platform of platforms) {
+            const platformTop = height - platform.height - platform.y;
+            const platformBottom = platformTop + platform.height;
+            const platformLeft = platform.x;
+            const platformRight = platform.x + platform.width;
+            
+            // Проверка горизонтального пересечения
+            const hamsterLeft = this.x - this.width/2;
+            const hamsterRight = this.x + this.width/2;
+            const hamsterBottom = this.y + this.height;
+            
+            // Горизонтальное пересечение с платформой
+            const horizontalOverlap = hamsterRight > platformLeft && hamsterLeft < platformRight;
+            
+            // Проверка приземления сверху
+            if (horizontalOverlap && 
+                hamsterBottom >= platformTop && 
+                hamsterBottom <= platformTop + this.speedGravity && 
+                this.speedGravity > 0) {
+                
+                this.y = platformTop - this.height;
+                this.speedGravity = 0;
+                this.isGrounded = true;
+                this.onPlatform = true;
+                wasOnPlatform = true;
+            }
+            
+            // Проверка нахождения на платформе
+            if (horizontalOverlap && 
+                hamsterBottom >= platformTop && 
+                hamsterBottom <= platformBottom) {
+                wasOnPlatform = true;
+            }
+        }
+        
+        // Обновление состояния при сходе с платформы
+        if (!wasOnPlatform && this.onPlatform) {
+            this.onPlatform = false;
+            this.isGrounded = false;
+        }
+    },
 
         jump: function () {
             if (this.isGrounded) {
                 this.speedGravity = -20;
                 this.isGrounded = false;
+                this.onPlatform = false;
             }
         },
 
         moveLeft: function () {
             this.x -= 5;
+            // Проверяем, не ушел ли хомяк с платформы влево
+            if (this.onPlatform) {
+                let onAnyPlatform = false;
+                for (let platform of platforms) {
+                    const platformTop = height - platform.height - platform.y;
+                    if (this.x > platform.x && 
+                        this.x < platform.x + platform.width &&
+                        this.y + this.height >= platformTop && 
+                        this.y + this.height <= platformTop + platform.height) {
+                        onAnyPlatform = true;
+                        break;
+                    }
+                }
+                if (!onAnyPlatform) {
+                    this.onPlatform = false;
+                    this.isGrounded = false;
+                }
+            }
         },
 
         moveRight: function () {
             this.x += 5;
+            // Проверяем, не ушел ли хомяк с платформы вправо
+            if (this.onPlatform) {
+                let onAnyPlatform = false;
+                for (let platform of platforms) {
+                    const platformTop = height - platform.height - platform.y;
+                    if (this.x > platform.x && 
+                        this.x < platform.x + platform.width &&
+                        this.y + this.height >= platformTop && 
+                        this.y + this.height <= platformTop + platform.height) {
+                        onAnyPlatform = true;
+                        break;
+                    }
+                }
+                if (!onAnyPlatform) {
+                    this.onPlatform = false;
+                    this.isGrounded = false;
+                }
+            }
         },
 
         movement: function () {
@@ -201,15 +438,16 @@ function setup() {
         },
 
         checkCanyon: function () {
+            if (this.isDead) return;
+            
             for (let i = 0; i < canyons.length; i++) {
                 if (
                     this.y + this.height >= height - floor.height &&
-                    this.x - this.width > canyons[i].x &&
-                    this.x + this.width < canyons[i].x + canyons[i].width
+                    this.x - this.width/2 > canyons[i].x &&
+                    this.x + this.width/2 < canyons[i].x + canyons[i].width
                 ) {
-                    this.isGrounded = false;
-                    this.isDead = true;
-                    this.speedGravity = 3;
+                    this.die();
+                    break;
                 }
             }
         },
@@ -238,53 +476,106 @@ function setup() {
 
                 if (this.x < crow.x + 75 && this.x + this.width > crow.x && this.y < crow.y + 70 && this.y + this.height > crow.y) {
                     if (this.speedGravity > 0 && this.y + this.height <= crow.y + 20) {
+                        // Победа над вороной
                         crow.isDead = true;
                         this.speedGravity = -10;
                         crowDeath.play();
+                        score += 10;
                     } else {
-                        this.isDead = true;
-                        this.speedGravity = 3;
-                        hamsterDeath.play();
+                        // Смерть от вороны
+                        this.die();
                     }
                     break;
                 }
             }
+        },
+        
+        die: function() {
+            this.isDead = true;
+            this.speedGravity = 3;
+            hamsterDeath.play();
         }
     };
 }
 
+function restartGame() {
+    restartButton.style('display', 'none');
+    initGame();
+}
+
 function drawScore() {
-    fill(0);
+    fill(255, 255, 255, 180); 
+    stroke(0, 100, 0); 
+    strokeWeight(2);
+    rect(10, 10, 150, 40, 20); 
+    
+    fill(0, 100, 0); 
     noStroke();
-    textSize(25);
-    textAlign(LEFT, TOP);
-    text("Счёт: " + score, 15, 15);
+    textSize(18);
+    textAlign(LEFT, CENTER);
+    text("Счёт:", 25, 30);
+    
+    fill(255, 255, 200); 
+    stroke(0, 100, 0);
+    rect(80, 15, 70, 30, 10); 
+    
+    fill(0); 
+    textSize(20);
+    textAlign(CENTER, CENTER);
+    text(score, 115, 30);
+    
+    fill(210, 180, 140);
+    noStroke();
+    ellipse(160, 30, 20, 15);
+    fill(160, 130, 100);
+    arc(160, 30, 20, 15, -PI/4, PI/4);
+}
+
+function drawGameOver() {
+    fill(255, 0, 0, 200);
+    textSize(60);
+    textAlign(CENTER, CENTER);
+    text("GAME OVER", width/2, height/2 - 50);
 }
 
 function draw() {
     background("#4dd5ef");
     floor.draw();
+    backmus.play();
 
+    // Отрисовка платформ
+    for (let platform of platforms) {
+        platform.draw();
+    }
+
+    // Отрисовка каньонов
     for (let canyon of canyons) {
         canyon.draw();
     }
 
+    // Отрисовка семян
     for (let seed of seeds) {
         seed.draw();
     }
 
+    // Отрисовка и движение ворон
     for (let crow of crows) {
         crow.random = Math.floor(Math.random() * (7 - 1)) + 1;
         crow.move();
         crow.draw();
     }
 
-    hamster.gravity(floor.height);
-    hamster.movement();
-    hamster.checkCanyon();
-    hamster.checkSeeds();
-    hamster.checkCrows();
-    hamster.draw();
+    if (!gameOver) {
+        // Физика и движение хомяка
+        hamster.gravity(floor.height);
+        hamster.movement();
+        hamster.checkCanyon();
+        hamster.checkSeeds();
+        hamster.checkCrows();
+        hamster.draw();
+    } else {
+        drawGameOver();
+    }
 
     drawScore();
 }
